@@ -1,9 +1,9 @@
 import fsPromises from 'fs/promises';
 import { fileManager } from './FileManager.js';
 
-export const ls = async (inputStr) => {
+export const ls = async (argsStr) => {
   try {
-    if (inputStr.length > 0) {
+    if (argsStr.length > 0) {
       console.error('Invalid input! Expecting no arguments.');
       return;
     }
@@ -12,6 +12,7 @@ export const ls = async (inputStr) => {
     const direntsArr = await fsPromises.readdir(currentPath, {
       withFileTypes: true,
     });
+    console.log('List of files:')
     for (const dirent of direntsArr) {
       console.log(dirent.name);
     }

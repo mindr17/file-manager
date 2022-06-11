@@ -1,55 +1,58 @@
-import process, { argv, stdout, exit } from 'process';
-import { dirname } from 'path';
-import readline from 'readline';
-import { fileURLToPath } from 'url';
+import { argv, stdin, stdout, exit } from 'process';
+import { createInterface } from 'readline';
 import { fileManager } from './modules/FileManager.js';
-const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const main = async () => {
   try {
-    const usernameArr = argv.filter(item => item.startsWith('--username'));
-    const usernameStr = usernameArr.toString();
-    const usernameNotCapitalized = usernameStr.slice(11);
-    const username = usernameNotCapitalized.charAt(0).toUpperCase() + usernameNotCapitalized.slice(1);
-    console.log(`Welcome to the File Manager, ${username}!\n`);
+    const getUserName = (argsArr) => {
+      const usernameArr = argsArr.filter(item => item.startsWith('--username'));
+      const usernameStr = usernameArr.toString();
+      const usernameNotCapitalized = usernameStr.slice(11);
+      const username = 
+        usernameNotCapitalized.charAt(0).toUpperCase() +
+        usernameNotCapitalized.slice(1);
+      return username;
+    }
+    const username = getUserName(argv);
+    stdout.write(`Welcome to the File Manager, ${username}!\n`);
     
-    const rl = readline.createInterface({
-      input: process.stdin,
-      output: process.stdout,
+    const rl = createInterface({
+      input: stdin,
+      output: stdout,
     });
-    
-    rl.on('SIGINT', () => rl.close());
     rl.on('close', () => {
-      console.log(`Thank you for using File Manager, ${username}\n`);
+      stdout.write(`Thank you for using File Manager, ${username}\n`);
       exit();
     });
+    rl.on('SIGINT', () => rl.close());
 
-    const printHomeDir = () => {
-      const homeDirPath = fileManager.currentDir;
-      console.log(`You are currently in ${homeDirPath}\n`);
-    };
-
-    const handleInput = async (answer) => {
+    const handleInput = async (answerStr) => {
       try {
-        // const inputArr = answer.split(' ');
-        // const operationName = inputArr[0];
-        const spaceIndex = answer.indexOf(' ');
-        console.log('spaceIndex: ', spaceIndex);
+        const getOperationName = (answerStr) => {
+          const spaceIndex = answerStr.indexOf(' ');
+          if (spaceIndex > 0) {
+            const spaceIndex = answerStr.indexOf(' ');
+            const operationName = answerStr.slice(0, spaceIndex);
+            const argsStr = answerStr.slice(spaceIndex + 1, answerStr.length);
+            return [operationName, argsStr];
+          } else {
+            return [answerStr, ''];
+          }
+        };
+        const [operationName, argsStr] = getOperationName(answerStr);
         const operation = fileManager[operationName];
         if (operation === undefined) {
-          console.error('Invalid input! No such command!');
+          console.error('Invalid input! No such command.');
           return;
         }
-        // const argumentsArr = inputArr.slice(1);
-        // const inputStr = argumentsArr.join('');
-        await operation(inputStr);
+        await operation(argsStr);
       } catch (err) {
         console.error(err);
       }
     };
 
     const ask = async () => {
-      printHomeDir();
+      stdout.write(`You are currently in ${fileManager.currentDir}\n`);
       rl.question('', async (answer) => {
         if (answer != '.exit') {
           await handleInput(answer);
@@ -60,10 +63,10 @@ const main = async () => {
         }
       });
     };
-    ask();
+    await ask();
 
   } catch(err) {
-    throw new Error (err);
+    console.error(err);
   }
 
 };

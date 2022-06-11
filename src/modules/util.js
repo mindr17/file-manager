@@ -8,5 +8,12 @@ export const checkIfFileExists = async (filePath) => {
     return false;
   }
 };
+  
+// TODO: add handling absolute paths
 
-// export const 
+export const checkArgsCount = (argsStr, count) => {
+  if (argsStr.length === 0 && count !== 0) return false;
+  const argsArr = argsStr.split(' ');
+  if (argsArr.length === count) return true;
+  return false;
+}

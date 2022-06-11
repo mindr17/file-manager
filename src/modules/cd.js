@@ -11,7 +11,6 @@ export const cd = async (inputStr) => {
     }
     
     const argsArr = inputStr.split(' ');
-    console.log('argsArr: ', argsArr);
     if (argsArr.length > 1) {
       console.error('Invalid input! Expecting string without spaces!');
       return;
@@ -30,14 +29,13 @@ export const cd = async (inputStr) => {
     const newDir = getNewDir(oldDir, inputStr);
 
     const stats = await fsPromises.stat(newDir);
-
     if (!stats.isDirectory()) {
-      console.error('Invalid input! No such directorhy!');
+      console.error(`Invalid input!\ncd: no such directory: ${inputStr}`);
       return;
     }
 
     fileManager.currentDir = getNewDir(oldDir, inputStr);
   } catch(err) {
-    console.error('Invalid input\n' + err);
+    console.error(`Invalid input!\ncd: no such directory: ${inputStr}`);
   }
 };

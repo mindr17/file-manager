@@ -1,8 +1,11 @@
 import { fileManager } from './FileManager.js';
 
-export const up = (inputStr) => {
-  if (inputStr.length > 0) throw new Error('Invalid input');
+export const up = async (inputStr) => {
   try {
+    if (inputStr.length > 0) {
+      console.error('Invalid input! Up cannot have arguments.');
+      return;
+    }
     const dirArr = fileManager.currentDir.split('/');
     if (dirArr[1] === '') throw new Error('Operation failed');
     const length = dirArr.length;

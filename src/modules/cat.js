@@ -1,27 +1,37 @@
-import fs from 'fs';
-import path, { dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { createReadStream, promises as fsPromises } from 'fs';
+import path, { resolve } from 'path';
 import { stdout } from 'process';
-import { checkIfFileExists } from 'util';
+import { checkIfFileExists } from './util.js';
 import { fileManager } from './FileManager.js';
-const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export const cat = async (inputStr) => {
-  const currentPath = fileManager.currentDir;
-  const filePath = path.join(currentPath, inputStr);
-  if (!checkIfFileExists(filePath)) throw new Error('Invalid input');
-  await fsPromises.stat(filePath, (error, stats) => {
-    if (error || stats.isDirectory()) {
-      throw new Error('Invalid input');
+  try {
+    const currentPath = fileManager.currentDir;
+    const filePath = path.join(currentPath, inputStr);
+    
+    const stats = await fsPromises.stat(filePath);
+    if (!stats.isFile()) {
+      console.error(`Invalid input!\ncat: no such file: ${inputStr}`);
+      return;
     }
-  });
 
-  const stream = fs.createReadStream(filePath, 'utf8');
-  stream.on('readable', async () => {
-    let buffer = await stream.read();
-    if (buffer) {
-      const text = buffer.toString();
-      stdout.write(`${text}\n`);
+    if (!checkIfFileExists(filePath)) {
+      console.error('Invalid input! No such file.');
+      return;
     }
-  });
+  
+    const stream = createReadStream(filePath, 'utf8');
+    const streamData = await new Promise((res, rej) => {
+        stream.on('readable', () => {
+        const buffer = stream.read();
+        if (buffer) {
+          res(buffer);
+        }
+      });
+    });
+    const text = streamData.toString();
+    stdout.write(`${text}\n`);
+  } catch(err) {
+    console.log(`Operation failed!\n${err}`);
+  }
 };
