@@ -1,61 +1,43 @@
 import { homedir } from 'os';
 import { fileManager } from './FileManager.js';
-import fsPromises from 'fs';
+import fsPromises from 'fs/promises';
+import path from 'path';
 
-export const cd = async (argsArr) => {
+export const cd = async (inputStr) => {
   try {
-    if (argsArr.length === 0) {
+    if (inputStr.length === 0) {
       fileManager.currentDir = homedir();
       return;
     }
-    if (argsArr.length > 1) throw new Error('Invalid input');
-    const argsStr = argsArr.toString();
-
-    fsPromises.stat(path, (error, stats) => {
-      if (error) {
-        throw new Error('Invalid input');
-      }
-      console.log(stats.isDirectory());
-    });
-
-    const checkIfFolderExists = async (folderPath) => {
-      try {
-          await fs.promises.access(folderPath, fs.constants.F_OK)
-          return true;
-      } catch (e) {
-          return false;
-      }
-    };
+    
+    const argsArr = inputStr.split(' ');
+    console.log('argsArr: ', argsArr);
+    if (argsArr.length > 1) {
+      console.error('Invalid input! Expecting string without spaces!');
+      return;
+    }
 
     const oldDir = fileManager.currentDir;
 
-    const getNewDir = (oldDir, argsStr) => {
-      if (argsStr.startsWith('/')) {
-        return argsStr;
+    const getNewDir = (oldDir, inputStr) => {
+      if (inputStr.startsWith('/')) {
+        return inputStr;
       } else {
-        return oldDir + '/' + argsStr;
+        return path.join(oldDir, inputStr);
       }
     };
-
-    const newDir = getNewDir();
-
-    fsPromises.stat(newDir, (error, stats) => {
-      if (error || !stats.isDirectory()) {
-        throw new Error('Invalid input');
-      }
-    });
-    fileManager.currentDir = getNewDir(oldDir, argsStr);
-
-    // const direntsArr = fsPromises.readdir(currentPath, {
-    //   withFileTypes: true,
-    // });
-    // for (const dirent of direntsArr) {
-      //   if (dirent.isFolder() && dirent.name === argsStr) {
-        //     fileManager.currentDir = getNewDir(oldDir, argsStr);
-        //   }
-    // }
     
+    const newDir = getNewDir(oldDir, inputStr);
+
+    const stats = await fsPromises.stat(newDir);
+
+    if (!stats.isDirectory()) {
+      console.error('Invalid input! No such directorhy!');
+      return;
+    }
+
+    fileManager.currentDir = getNewDir(oldDir, inputStr);
   } catch(err) {
-    throw new Error('Invalid input');
+    console.error('Invalid input\n' + err);
   }
 };

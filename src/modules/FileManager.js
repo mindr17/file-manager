@@ -12,12 +12,16 @@ class FileManager {
     up(args);
   }
 
-  cd(args) {
-    cd(args);
+  async cd(args) {
+    await cd(args);
   }
 
   async ls(args) {
     await ls(args);
+  }
+
+  async cat(args) {
+    await cat(args);
   }
 }
 export const fileManager = new FileManager();

@@ -11,7 +11,7 @@ const main = async () => {
     const usernameStr = usernameArr.toString();
     const usernameNotCapitalized = usernameStr.slice(11);
     const username = usernameNotCapitalized.charAt(0).toUpperCase() + usernameNotCapitalized.slice(1);
-    stdout.write(`Welcome to the File Manager, ${username}!\n`);
+    console.log(`Welcome to the File Manager, ${username}!\n`);
     
     const rl = readline.createInterface({
       input: process.stdin,
@@ -20,34 +20,40 @@ const main = async () => {
     
     rl.on('SIGINT', () => rl.close());
     rl.on('close', () => {
-      stdout.write(`Thank you for using File Manager, ${username}\n`);
+      console.log(`Thank you for using File Manager, ${username}\n`);
       exit();
     });
 
     const printHomeDir = () => {
       const homeDirPath = fileManager.currentDir;
-      stdout.write(`You are currently in ${homeDirPath}\n`);
+      console.log(`You are currently in ${homeDirPath}\n`);
     };
 
     const handleInput = async (answer) => {
       try {
-        const inputArr = answer.split(' ');
-        const operationName = inputArr[0];
-        const argumentsArr = inputArr.slice(1);
+        // const inputArr = answer.split(' ');
+        // const operationName = inputArr[0];
+        const spaceIndex = answer.indexOf(' ');
+        console.log('spaceIndex: ', spaceIndex);
         const operation = fileManager[operationName];
-        if (operation === undefined) throw new Error('Invalid input');
-        await operation(argumentsArr);
+        if (operation === undefined) {
+          console.error('Invalid input! No such command!');
+          return;
+        }
+        // const argumentsArr = inputArr.slice(1);
+        // const inputStr = argumentsArr.join('');
+        await operation(inputStr);
       } catch (err) {
         console.error(err);
       }
     };
-    
-    const ask = () => {
+
+    const ask = async () => {
       printHomeDir();
-      rl.question('', (answer) => {
+      rl.question('', async (answer) => {
         if (answer != '.exit') {
-          handleInput(answer);
-          ask();
+          await handleInput(answer);
+          await ask();
         }
         else {
           rl.close();
