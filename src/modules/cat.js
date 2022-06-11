@@ -1,25 +1,12 @@
-import { createReadStream, promises as fsPromises } from 'fs';
-import path, { resolve } from 'path';
+import { createReadStream } from 'fs';
 import { stdout } from 'process';
-import { checkIfFileExists } from './util.js';
-import { fileManager } from './FileManager.js';
+import { getArgsArr, getFullPath, InputError } from './util.js';
 
 export const cat = async (inputStr) => {
   try {
-    const currentPath = fileManager.currentDir;
-    const filePath = path.join(currentPath, inputStr);
-    
-    const stats = await fsPromises.stat(filePath);
-    if (!stats.isFile()) {
-      console.error(`Invalid input!\ncat: no such file: ${inputStr}`);
-      return;
-    }
+    const [arg1] = getArgsArr(inputStr, 1);
+    const filePath = await getFullPath(arg1);
 
-    if (!checkIfFileExists(filePath)) {
-      console.error('Invalid input! No such file.');
-      return;
-    }
-  
     const stream = createReadStream(filePath, 'utf8');
     const streamData = await new Promise((res, rej) => {
         stream.on('readable', () => {
@@ -29,9 +16,14 @@ export const cat = async (inputStr) => {
         }
       });
     });
+
     const text = streamData.toString();
     stdout.write(`${text}\n`);
   } catch(err) {
-    console.log(`Operation failed!\n${err}`);
+    if (err instanceof InputError) {
+      console.error(err);
+    } else {
+      console.error(`Operation failed!\n${err}`);
+    }
   }
 };

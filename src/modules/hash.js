@@ -1,9 +1,8 @@
 import { createReadStream, promises as fsPromises } from 'fs';
 import path from 'path';
 import { stdout } from 'process';
-import { checkArgsCount } from './util.js';
+import { getArgsArr } from './util.js';
 import { createHash } from 'crypto';
-import { fileManager } from './FileManager.js';
 
 export const hash = async (argsStr) => {
   try {
@@ -12,40 +11,38 @@ export const hash = async (argsStr) => {
     const currentDir = fileManager.currentDir;
     const filePath = path.join(currentDir, argsStr);
 
+    const stats = await fsPromises.stat(filePath);
+    if (!stats.isFile()) {
+      console.error(`Invalid input!\ncat: no such file: ${inputStr}`);
+      return;
+    }
+
+    if (!checkIfFileExists(filePath)) {
+      console.error('Invalid input! No such file.');
+      return;
+    }
+
     const stream = createReadStream(filePath, 'utf8');
-    // stream.on('readable', async () => {
-    //   let buffer = await stream.read();
-    //   if (buffer) {
-    //     const contents = buffer.toString();
-    //     const hash = createHash('sha256');
-    //     const myHash = hash.update(contents);
-    //     const hex = myHash.digest('hex');
-    //     stdout.write(`${hex}\n`);
-    //   }
-    // });
+    const streamData = await new Promise((res, rej) => {
+        stream.on('readable', () => {
+        const buffer = stream.read();
+        if (buffer) {
+          res(buffer);
+        }
+      });
+    });
+    const text = streamData.toString();
+    stdout.write(`${text}\n`);
+
     
-    // stream.on('readable', async () => {
-    //   let buffer = await stream.read();
-    //   if (buffer) {
-    //     const contents = buffer.toString();
-    //     const hash = createHash('sha256');
-    //     const myHash = hash.update(contents);
-    //     const hex = myHash.digest('hex');
-    //     stdout.write(`${hex}\n`);
-    //   }
-    // });
-
-    // var fd = fs.createReadStream('/some/file/name.txt');
-    // var hash = crypto.createHash('sha1');
-    // hash.setEncoding('hex');
-    // // read all file and pipe it (write it) to the hash object
-    // fd.pipe(hash);
-
     const contents = await new Promise((resolve, reject) => {
       stream.on('end', () => resolve(stream.read()));
     });
     
-    console.log('contents: ', contents);
+    const hash = createHash('sha256');
+    const myHash = hash.update(contents);
+    const hex = myHash.digest('hex');
+    stdout.write(`${hex}\n`);
 
   } catch(err) {
     console.error(`Operation failed!\n${err}`);

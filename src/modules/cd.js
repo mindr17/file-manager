@@ -1,40 +1,11 @@
-import { homedir } from 'os';
-import { fileManager } from './FileManager.js';
-import fsPromises from 'fs/promises';
-import path from 'path';
+import { fileManagerController } from './FileManagerController.js';
+import { getArgsArr, getFullPath } from './util.js';
 
 export const cd = async (inputStr) => {
   try {
-    if (inputStr.length === 0) {
-      fileManager.currentDir = homedir();
-      return;
-    }
-    
-    const argsArr = inputStr.split(' ');
-    if (argsArr.length > 1) {
-      console.error('Invalid input! Expecting string without spaces!');
-      return;
-    }
-
-    const oldDir = fileManager.currentDir;
-
-    const getNewDir = (oldDir, inputStr) => {
-      if (inputStr.startsWith('/')) {
-        return inputStr;
-      } else {
-        return path.join(oldDir, inputStr);
-      }
-    };
-    
-    const newDir = getNewDir(oldDir, inputStr);
-
-    const stats = await fsPromises.stat(newDir);
-    if (!stats.isDirectory()) {
-      console.error(`Invalid input!\ncd: no such directory: ${inputStr}`);
-      return;
-    }
-
-    fileManager.currentDir = getNewDir(oldDir, inputStr);
+    const [arg1] = getArgsArr(inputStr, 1);
+    const newPath = await getFullPath(arg1);
+    fileManagerController.setCurrentDir(newPath);
   } catch(err) {
     console.error(`Invalid input!\ncd: no such directory: ${inputStr}`);
   }

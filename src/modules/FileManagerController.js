@@ -1,4 +1,4 @@
-import { homedir } from 'os';
+import { fileManagerModel } from './FileManagerModel.js';
 import { up } from './up.js';
 import { cd } from './cd.js';
 import { ls } from './ls.js';
@@ -7,17 +7,15 @@ import { compress } from './compress.js';
 import { decompress } from './decompress.js';
 import { hash } from './hash.js';
 
-class FileManager {
-  constructor() {
-    this._currentDir = homedir();
+class FileManagerController {
+  constructor() {}
+
+  getCurrentDir() {
+    return fileManagerModel.currentDir;
   }
 
-  get currentDir() {
-    return this._currentDir;
-  }
-
-  set currentDir(path) {
-    this._currentDir = path;
+  setCurrentDir(path) {
+    fileManagerModel.currentDir = path;
   }
 
   async up(args) {
@@ -48,4 +46,4 @@ class FileManager {
     await hash(args);
   }
 }
-export const fileManager = new FileManager();
+export const fileManagerController = new FileManagerController();

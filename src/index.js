@@ -1,6 +1,6 @@
 import { argv, stdin, stdout, exit } from 'process';
 import { createInterface } from 'readline';
-import { fileManager } from './modules/FileManager.js';
+import { fileManagerController } from './modules/FileManagerController.js';
 
 const main = async () => {
   try {
@@ -40,7 +40,7 @@ const main = async () => {
           }
         };
         const [operationName, argsStr] = getOperationName(answerStr);
-        const operation = fileManager[operationName];
+        const operation = fileManagerController[operationName];
         if (operation === undefined) {
           console.error('Invalid input! No such command.');
           return;
@@ -52,7 +52,7 @@ const main = async () => {
     };
 
     const ask = async () => {
-      stdout.write(`You are currently in ${fileManager.currentDir}\n`);
+      stdout.write(`You are currently in ${fileManagerController.getCurrentDir()}\n`);
       rl.question('', async (answer) => {
         if (answer != '.exit') {
           await handleInput(answer);
@@ -66,9 +66,7 @@ const main = async () => {
     await ask();
 
   } catch(err) {
-    console.error(err);
+    console.error(`Operation failed! Something went wrong on top level.\n${err}`);
   }
-
 };
-
 main();

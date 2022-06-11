@@ -2,7 +2,6 @@ import path from 'path';
 import fs from 'fs';
 import { createGzip } from 'zlib';
 import { pipeline } from 'stream';
-import { fileManager } from './FileManager.js';
 
 export const compress = async (argsStr) => {
   try {

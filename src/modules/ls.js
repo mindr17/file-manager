@@ -1,5 +1,4 @@
 import fsPromises from 'fs/promises';
-import { fileManager } from './FileManager.js';
 
 export const ls = async (argsStr) => {
   try {
@@ -8,7 +7,6 @@ export const ls = async (argsStr) => {
       return;
     }
 
-    const currentPath = fileManager.currentDir;
     const direntsArr = await fsPromises.readdir(currentPath, {
       withFileTypes: true,
     });
@@ -17,6 +15,6 @@ export const ls = async (argsStr) => {
       console.log(dirent.name);
     }
   } catch (err) {
-    throw new Error('Invalid input')
+    throw new Error('Invalid input');
   }
 };
