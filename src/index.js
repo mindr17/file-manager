@@ -1,6 +1,7 @@
 import { argv, stdin, stdout, exit } from 'process';
 import { createInterface } from 'readline';
 import { fileManagerController } from './modules/FileManagerController.js';
+import { handleErrors, InputError } from './modules/util.js';
 
 const main = async () => {
   try {
@@ -27,7 +28,7 @@ const main = async () => {
 
     const handleInput = async (answerStr) => {
       try {
-        const getOperationName = (answerStr) => {
+        const splitInput = (answerStr) => {
           const spaceIndex = answerStr.indexOf(' ');
           if (spaceIndex > 0) {
             const spaceIndex = answerStr.indexOf(' ');
@@ -38,20 +39,19 @@ const main = async () => {
             return [answerStr, ''];
           }
         };
-        const [operationName, argsStr] = getOperationName(answerStr);
+        const [operationName, argsStr] = splitInput(answerStr);
         const operation = fileManagerController[operationName];
         if (operation === undefined) {
-          console.error('Invalid input! No such command.');
-          return;
+          throw new InputError('Invalid input! No such command.');
         }
         await operation(argsStr);
       } catch (err) {
-        console.error(err);
+        handleErrors(err);
       }
     };
 
     const ask = async () => {
-      stdout.write(`You are currently in ${fileManagerController.getCurrentDir()}\n`);
+      stdout.write(`\nYou are currently in ${fileManagerController.getCurrentDir()}\n`);
       rl.question('', async (answer) => {
         if (answer != '.exit') {
           await handleInput(answer);

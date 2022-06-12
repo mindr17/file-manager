@@ -4,21 +4,20 @@ import { getArgsArr, getFullPath, handleErrors } from './util.js';
 
 export const cat = async (inputStr) => {
   try {
-    const [ arg1 ] = getArgsArr(inputStr, 1);
-    const filePath = await getFullPath(arg1, 'file');
+    const [ firstArg ] = getArgsArr(inputStr, 1);
+    const filePath = await getFullPath(firstArg, 'file');
 
     const stream = createReadStream(filePath, 'utf8');
-    const streamData = await new Promise((res, rej) => {
-        stream.on('readable', () => {
-        const buffer = stream.read();
-        if (buffer) {
-          res(buffer);
-        }
-      });
-    });
+    stream.on('data', data => stdout.write(data));
 
-    const text = streamData.toString();
-    stdout.write(`${text}\n`);
+    await new Promise((resolve, reject) => {
+      stream.on('end', () => {
+        stream.destroy();
+        resolve();
+      });
+      stream.on('error', err => reject(err));
+    });
+    
   } catch(err) {
     handleErrors(err);
   }

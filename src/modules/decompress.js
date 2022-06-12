@@ -1,25 +1,29 @@
-import fs from 'fs';
-import zlib from 'zlib';
-import { getFullPath, getArgsArr, buildPath, handleErrors } from './util.js';
+import { createReadStream, createWriteStream } from 'fs';
+import { createBrotliDecompress } from 'zlib';
+import { getArgsArr, buildPath, getFullPath, handleErrors } from './util.js';
 
 export const decompress = async (argsStr) => {
   try {
-    const [ firstArg, secondArg ] = getArgsArr(argsStr, 2);
-
-    const fromPath = await getFullPath(firstArg, 'file');
-    console.log('fromPath: ', fromPath);
-    const toPath = buildPath(secondArg);
-    console.log('toPath: ', toPath);
+    const [ arg1, arg2 ] = getArgsArr(argsStr, 2);
+    const fromPath = await getFullPath(arg1, 'file');
+    const toPath = buildPath(arg2);
   
-    const readStream = fs.createReadStream(fromPath);
-    const gunzip = zlib.createUnzip();
-    const writeStream = fs.createWriteStream(toPath);
-    
-    readStream.pipe(gunzip).pipe(writeStream);
+    const readStream = createReadStream(fromPath);
+    const brotli = createBrotliDecompress();
+    const writeStream = createWriteStream(toPath);
 
-    // writeStream.on('finished', () => {
-    //   console.log('finished!');
-    // });
+    const stream = readStream.pipe(brotli).pipe(writeStream);
+
+    await new Promise((res, rej) => {
+      stream.on('finish', () => {
+        console.log('Brolti decompression done.');
+        res();
+      });
+      stream.on('error', (err) => {
+        rej(err);
+      });
+    });
+
 
   } catch(err) {
     handleErrors(err);

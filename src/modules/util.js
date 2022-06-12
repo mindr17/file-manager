@@ -1,5 +1,5 @@
 import { join, isAbsolute } from 'path';
-import { promises as fsPromises } from 'fs';
+import { stat } from 'fs/promises';
 import { fileManagerController } from './FileManagerController.js';
 
 export class InputError extends Error {}
@@ -17,12 +17,16 @@ export const getArgsArr = (argsStr, argsCount) => {
     if (argsCount === 0) {
       return '';
     } else {
-      throw new InputError(`Invalid input! Expecting exactly ${argsCount} arguments for this command.`);
+      throw new InputError(
+        `Invalid input! Expecting exactly ${argsCount} ${(argsCount === 1) ? 'argument' : 'arguments'} for this command.`
+      );
     }
   }
   const argsArr = argsStr.split(' ');
   if (argsArr.length !== argsCount) {
-    throw new InputError(`Invalid input! Expecting exactly ${argsCount} arguments for this command.`);
+    throw new InputError(
+      `Invalid input! Expecting exactly ${argsCount} ${(argsCount === 1) ? 'argument' : 'arguments'} for this command.`
+    );
   } else {
     return argsArr;
   }
@@ -46,7 +50,7 @@ export const getFullPath = async (pathStr, type) => {
   try {
     const newPath = buildPath(pathStr);
     const checkTypeAndExistence = async (filePath, type) => {
-      const stats = await fsPromises.stat(filePath);
+      const stats = await stat(filePath);
       if (type === 'file' && !stats.isFile()) {
         throw new InputError(`Invalid input! Not a file.`);
       }

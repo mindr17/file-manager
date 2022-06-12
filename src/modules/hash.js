@@ -9,25 +9,18 @@ export const hash = async (argsStr) => {
     const filePath = await getFullPath(firstArg, 'file');
 
     const stream = createReadStream(filePath, 'utf8');
-    const streamData = await new Promise((res, rej) => {
-        stream.on('readable', () => {
-        const buffer = stream.read();
-        if (buffer) {
-          res(buffer);
-        }
+    const hash = createHash('sha256');
+    
+    const hex = await new Promise((resolve, reject) => {
+      stream.on('data', chunk => hash.update(chunk));
+      stream.on('end', () => {
+        stream.destroy();
+        const hex = hash.digest('hex');
+        resolve(hex);
       });
-    });
-
-    const text = streamData.toString();
-    stdout.write(`${text}\n`);
-
-    await new Promise((resolve, reject) => {
-      stream.on('end', () => resolve(stream.read()));
+      stream.on('error', err => reject(err));
     });
     
-    const hash = createHash('sha256');
-    const myHash = hash.update(text);
-    const hex = myHash.digest('hex');
     stdout.write(`${hex}\n`);
 
   } catch(err) {
