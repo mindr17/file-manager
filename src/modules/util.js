@@ -3,8 +3,14 @@ import { promises as fsPromises } from 'fs';
 import { fileManagerController } from './FileManagerController.js';
 
 export class InputError extends Error {}
-
 export class OperationError extends Error {}
+export const handleErrors = (err) => {
+  if (err instanceof InputError || err instanceof OperationError) {
+    console.error(err);
+  } else {
+    console.error(`Operation failed!\n${err}`);
+  }
+};
 
 export const getArgsArr = (argsStr, argsCount) => {
   if (argsStr.length === 0) {
@@ -22,32 +28,35 @@ export const getArgsArr = (argsStr, argsCount) => {
   }
 };
 
-export const getFullPath = async (pathStr, type) => {
-  const getAbsulutePath = (pathStr) => {
+export const buildPath = (pathStr) => {
+  try {
     if (isAbsolute(pathStr)) {
-      // throw new InputError(`Invalid input! No such path.`);
       return pathStr;
     } else {
       const currentPath = fileManagerController.getCurrentDir();
       const newPath = join(currentPath, pathStr);
       return newPath;
     }
+  } catch(err) {
+    throw new InputError(`Invalid input! Error building path.`);
   }
-  const newPath = getAbsulutePath(pathStr);
+};
 
-  const checkTypeAndExistence = async (filePath, type) => {
-    try {
+export const getFullPath = async (pathStr, type) => {
+  try {
+    const newPath = buildPath(pathStr);
+    const checkTypeAndExistence = async (filePath, type) => {
       const stats = await fsPromises.stat(filePath);
-    } catch (err) {
-      throw new InputError(`Invalid input! No such file or directory.`);
-    }
-    if (type === 'file' && !stats.isFile()) {
-      throw new InputError(`Invalid input! No not a file.`);
-    } else if (type === 'folder' && !stats.isFolder()) {
-      throw new InputError(`Invalid input! No not a folder.`);
-    }
-  };
-  await checkTypeAndExistence(newPath, type);
-
-  return newPath;
+      if (type === 'file' && !stats.isFile()) {
+        throw new InputError(`Invalid input! Not a file.`);
+      }
+      if (type === 'folder' && !stats.isFolder()) {
+        throw new InputError(`Invalid input! Not a folder.`);
+      }
+    };
+    await checkTypeAndExistence(newPath, type);
+    return newPath;
+  } catch (err) {
+    throw new InputError(`Invalid input! No such file or directory.`);
+  }
 };

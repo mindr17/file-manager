@@ -18,7 +18,6 @@ const main = async () => {
     
     const rl = createInterface({
       input: stdin,
-      output: stdout,
     });
     rl.on('close', () => {
       stdout.write(`Thank you for using File Manager, ${username}\n`);

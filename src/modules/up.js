@@ -1,19 +1,15 @@
+import { parse } from 'path';
 import { fileManagerController } from './FileManagerController.js';
+import { getArgsArr, handleErrors } from './util.js';
 
-export const up = async (inputStr) => {
+export const up = async (argsStr) => {
   try {
-    checkArgsCount(inputStr, 0);
-    const dirArr = fileManagerController.getCurrentDir().split('/');
-    if (dirArr[1] === '') throw new Error('Operation failed');
-    const length = dirArr.length;
-    const currentDirArr = dirArr.slice(0, length - 1);
-    const currentDir = currentDirArr.join('/');
-    if (currentDir !== '') {
-      fileManagerController.currentDir = currentDir;
-    } else {
-      fileManagerController.currentDir = '/';
-    }
+    getArgsArr(argsStr, 0);
+    const oldPath = fileManagerController.getCurrentDir();
+    const parsed = parse(oldPath);
+    const newPath = parsed.dir;
+    fileManagerController.setCurrentDir(newPath);
   } catch(err) {
-    throw new Error('Operation failed');
+    handleErrors(err);
   }
 };

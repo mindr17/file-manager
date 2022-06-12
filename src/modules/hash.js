@@ -1,26 +1,12 @@
-import { createReadStream, promises as fsPromises } from 'fs';
-import path from 'path';
+import { createReadStream } from 'fs';
 import { stdout } from 'process';
-import { getArgsArr } from './util.js';
+import { getArgsArr, getFullPath, handleErrors } from './util.js';
 import { createHash } from 'crypto';
 
 export const hash = async (argsStr) => {
   try {
-    const argsAreCorrect = checkArgsCount(argsStr, 1);
-    console.log('argsAreCorrect: ', argsAreCorrect);
-    const currentDir = fileManager.currentDir;
-    const filePath = path.join(currentDir, argsStr);
-
-    const stats = await fsPromises.stat(filePath);
-    if (!stats.isFile()) {
-      console.error(`Invalid input!\ncat: no such file: ${inputStr}`);
-      return;
-    }
-
-    if (!checkIfFileExists(filePath)) {
-      console.error('Invalid input! No such file.');
-      return;
-    }
+    const [ firstArg ] = getArgsArr(argsStr, 1);
+    const filePath = await getFullPath(firstArg, 'file');
 
     const stream = createReadStream(filePath, 'utf8');
     const streamData = await new Promise((res, rej) => {
@@ -31,20 +17,20 @@ export const hash = async (argsStr) => {
         }
       });
     });
+
     const text = streamData.toString();
     stdout.write(`${text}\n`);
 
-    
-    const contents = await new Promise((resolve, reject) => {
+    await new Promise((resolve, reject) => {
       stream.on('end', () => resolve(stream.read()));
     });
     
     const hash = createHash('sha256');
-    const myHash = hash.update(contents);
+    const myHash = hash.update(text);
     const hex = myHash.digest('hex');
     stdout.write(`${hex}\n`);
 
   } catch(err) {
-    console.error(`Operation failed!\n${err}`);
+    handleErrors(err);
   }
 };

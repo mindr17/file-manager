@@ -6,6 +6,7 @@ import { cat } from './cat.js';
 import { compress } from './compress.js';
 import { decompress } from './decompress.js';
 import { hash } from './hash.js';
+import { add } from './add.js';
 
 class FileManagerController {
   constructor() {}
@@ -32,6 +33,10 @@ class FileManagerController {
 
   async cat(args) {
     await cat(args);
+  }
+
+  async add(args) {
+    await add(args);
   }
 
   async compress(args) {

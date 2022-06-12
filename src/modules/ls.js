@@ -1,11 +1,11 @@
 import fsPromises from 'fs/promises';
+import { fileManagerController } from './FileManagerController.js';
+import { getArgsArr, handleErrors } from './util.js';
 
 export const ls = async (argsStr) => {
   try {
-    if (argsStr.length > 0) {
-      console.error('Invalid input! Expecting no arguments.');
-      return;
-    }
+    getArgsArr(argsStr, 0);
+    const currentPath = fileManagerController.getCurrentDir();
 
     const direntsArr = await fsPromises.readdir(currentPath, {
       withFileTypes: true,
@@ -15,6 +15,6 @@ export const ls = async (argsStr) => {
       console.log(dirent.name);
     }
   } catch (err) {
-    throw new Error('Invalid input');
+    handleErrors(err);
   }
 };

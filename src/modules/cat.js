@@ -1,11 +1,11 @@
 import { createReadStream } from 'fs';
 import { stdout } from 'process';
-import { getArgsArr, getFullPath, InputError } from './util.js';
+import { getArgsArr, getFullPath, handleErrors } from './util.js';
 
 export const cat = async (inputStr) => {
   try {
-    const [arg1] = getArgsArr(inputStr, 1);
-    const filePath = await getFullPath(arg1);
+    const [ arg1 ] = getArgsArr(inputStr, 1);
+    const filePath = await getFullPath(arg1, 'file');
 
     const stream = createReadStream(filePath, 'utf8');
     const streamData = await new Promise((res, rej) => {
@@ -20,10 +20,6 @@ export const cat = async (inputStr) => {
     const text = streamData.toString();
     stdout.write(`${text}\n`);
   } catch(err) {
-    if (err instanceof InputError) {
-      console.error(err);
-    } else {
-      console.error(`Operation failed!\n${err}`);
-    }
+    handleErrors(err);
   }
 };

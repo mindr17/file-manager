@@ -1,27 +1,27 @@
 import fs from 'fs';
 import zlib from 'zlib';
-import path from 'path';
+import { getFullPath, getArgsArr, buildPath, handleErrors } from './util.js';
 
 export const decompress = async (argsStr) => {
   try {
-    const argsArr = argsStr.split(' ');
-    if (argsArr.length !== 2) {
-      console.error(`Invalid input! Expecting exactly 2 arguments.`);
-      return;
-    }
-    const firstArg = argsArr[0];
-    const secondArg = argsArr[1];
-    const currentDir = fileManager.currentDir;
+    const [ firstArg, secondArg ] = getArgsArr(argsStr, 2);
 
-    const fromPath = path.join(currentDir, firstArg);
-    const toPath = path.join(currentDir, secondArg);
+    const fromPath = await getFullPath(firstArg, 'file');
+    console.log('fromPath: ', fromPath);
+    const toPath = buildPath(secondArg);
+    console.log('toPath: ', toPath);
   
     const readStream = fs.createReadStream(fromPath);
     const gunzip = zlib.createUnzip();
     const writeStream = fs.createWriteStream(toPath);
     
     readStream.pipe(gunzip).pipe(writeStream);
+
+    // writeStream.on('finished', () => {
+    //   console.log('finished!');
+    // });
+
   } catch(err) {
-    console.error(`Operation failed!\n${err}`);
+    handleErrors(err);
   }
 };
