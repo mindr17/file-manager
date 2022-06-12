@@ -18,10 +18,11 @@ export const getArgsArr = (argsStr, argsCount) => {
       return '';
     } else {
       throw new InputError(
-        `Invalid input! Expecting exactly ${argsCount} ${(argsCount === 1) ? 'argument' : 'arguments'} for this command.`
+       `Invalid input! Expecting exactly ${argsCount} ${(argsCount === 1) ? 'argument' : 'arguments'} for this command.`
       );
     }
   }
+  
   const argsArr = argsStr.split(' ');
   if (argsArr.length !== argsCount) {
     throw new InputError(
