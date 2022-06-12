@@ -8,7 +8,7 @@ export const os = async (argsStr) => {
       throw new InputError(`Invalid input! Os commands must start with double dashes.`);
     }
     const infoTypeOfAnyCase = arg1.slice(2);
-    const infoType = infoTypeOfAnyCase.toLowercase();
+    const infoType = infoTypeOfAnyCase.toLowerCase();
 
     const osOperation = osController[infoType];
     if (osOperation === undefined) {

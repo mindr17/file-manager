@@ -10,7 +10,7 @@ export const ls = async (argsStr) => {
     const direntsArr = await fsPromises.readdir(currentPath, {
       withFileTypes: true,
     });
-    console.log('List of files:')
+    console.log('List of files and folders:')
     for (const dirent of direntsArr) {
       console.log(dirent.name);
     }

@@ -15,7 +15,7 @@ const main = async () => {
       return username;
     }
     const username = getUserName(argv);
-    stdout.write(`Welcome to the File Manager, ${username}!\n`);
+    console.log(`Welcome to the File Manager, ${username}!`);
     
     const rl = createInterface({
       input: stdin,
